@@ -1,4 +1,6 @@
-import './style.styl';
+import './utils.styl';
+import './pages/style.styl';
+
 import './vendor';
 import './utils';
 
@@ -15,7 +17,7 @@ $(() => {
             user: null,
         },
         created() {
-            
+
         }
     });
     window.app = app;

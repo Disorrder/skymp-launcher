@@ -1,2 +1,12 @@
-div#main
-    h1 Hello
+div#main.layout
+    header
+    main.container.mt-4
+        .row.justify-content-center: .card.col-6: .card-body
+            h3.text-center Авторизация
+            form#auth.mt-4(@submit="play")
+                .form-group
+                    input#login.form-control(placeholder="Имя персонажа" v-model="authData.login")
+                .form-group
+                    .form-text.text-muted.text-center Пароль можно ввести в игре
+                button.btn.btn-primary(type="submit" style="width: 100%;") Играть!    
+                
