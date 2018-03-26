@@ -1,0 +1,22 @@
+import './style.styl';
+import './vendor';
+import './utils';
+
+import Vue from 'vue';
+import router from './router';
+// import store from './store';
+
+$(() => {
+    var app = new Vue({
+        el: '#app',
+        // store,
+        router,
+        data: {
+            user: null,
+        },
+        created() {
+            
+        }
+    });
+    window.app = app;
+});
