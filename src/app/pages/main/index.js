@@ -5,15 +5,15 @@ import * as ini from 'app/utils/iniFile';
 const fs = window.require('fs');
 const path = window.require('path');
 
+var pkg = require('app/../../package.json');
 const cfgPath = path.resolve(__dirname, 'skymp_config.ini');
 
-var q = fs.readdirSync(__dirname)
-console.log(__dirname, q);
-
+console.log('QQQ', pkg);
 export default {
     template: require('./template.pug')(),
     data() {
         return {
+            version: pkg.version,
             debugData: {
                 dirname: __dirname,
             },

@@ -7,5 +7,6 @@
 `npm start` - запуск приложения
 
 ## Production
-`npm run build` - сборка кода
-`npm run build-win` - сборка .exe файла (не работает)
+Необходимо запустить 2 команды по очереди:
+`npm run build` - сборка кода (Webpack)
+`npm run build-win` - сборка .exe файла
