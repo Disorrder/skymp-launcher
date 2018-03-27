@@ -14,9 +14,12 @@ export default {
     template: require('./template.pug')(),
     data() {
         return {
+            debugData: {
+                dirname: __dirname,
+            },
             authData: {
                 login: '',
-                password: ''
+                password: '',
             },
         }
     },
