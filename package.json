@@ -8,7 +8,7 @@
     "web": "webpack-dev-server --progress",
     "dev": "webpack --watch",
     "build": "webpack --mode production",
-    "build-win": "TODO"
+    "build-win": "build --win"
   },
   "keywords": [
     "Electron"
@@ -21,6 +21,7 @@
     "copy-webpack-plugin": "^4.4.1",
     "css-loader": "^0.28.9",
     "electron": "~1.8.2",
+    "electron-builder": "^20.8.1",
     "file-loader": "^1.1.7",
     "fontgen-loader": "^0.2.1",
     "html-webpack-plugin": "^3.1.0",
@@ -43,5 +44,12 @@
     "popper.js": "^1.12.9",
     "vue": "^2.5.13",
     "vue-router": "^3.0.1"
+  },
+  "build": {
+    "appId": "app.id",
+    "win": {
+      "target": "portable",
+      "icon": "src/assets/logo/skymp-logo-256.ico"
+    }
   }
 }
