@@ -8,17 +8,15 @@ import Vue from 'vue';
 import router from './router';
 // import store from './store';
 
-$(() => {
-    var app = new Vue({
-        el: '#app',
-        // store,
-        router,
-        data: {
-            user: null,
-        },
-        created() {
+var app = new Vue({
+    el: '#app',
+    // store,
+    router,
+    data: {
+        user: null,
+    },
+    created() {
 
-        }
-    });
-    window.app = app;
+    }
 });
+window.app = app;

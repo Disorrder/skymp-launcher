@@ -1,4 +1,8 @@
 div#main.layout
+    nav.navbar-nav
+        router-link.nav-item.nav-settings(:to=`{name: "settings"}`)
+            i.fa.fa-bars
+    
     header
     main.container.mt-4
         .row.justify-content-center: .card.col-6: .card-body

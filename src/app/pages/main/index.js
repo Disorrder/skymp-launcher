@@ -6,9 +6,7 @@ const fs = window.require('fs');
 const path = window.require('path');
 
 var pkg = require('app/../../package.json');
-const cfgPath = path.resolve(__dirname, 'skymp_config.ini');
 
-console.log('QQQ', pkg);
 export default {
     template: require('./template.pug')(),
     data() {
@@ -17,6 +15,7 @@ export default {
             debugData: {
                 dirname: __dirname,
             },
+            gamePath: '',
             authData: {
                 login: '',
                 password: '',
@@ -35,9 +34,12 @@ export default {
         },
     },
     created() {
+        this.gamePath = localStorage.gamePath || '';
+        if (!this.gamePath) this.$router.push({name: 'settings'});
+
+        var cfgPath = path.resolve(this.gamePath, 'skymp_config.ini');
         this.cfg = ini.read(cfgPath);
         if (this.cfg.name) this.authData.login = this.cfg.name;
-        console.log('cfg', this.cfg);
     },
     mounted() {
         $('form#auth #login').focus();

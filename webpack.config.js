@@ -94,7 +94,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             filename: 'index.html',
             template: 'index.pug',
-            inject: 'head',
+            inject: 'body',
         }),
 
         // new webpack.DefinePlugin({
