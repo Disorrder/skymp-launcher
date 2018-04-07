@@ -57,7 +57,6 @@ app.on('activate', function () {
 })
 
 app.on('browser-window-created',function(e, window) {
-    window.setMenu(null);
 });
 
 // In this file you can include the rest of your app's specific main process
