@@ -30,6 +30,10 @@ export default {
                 login: '',
                 password: '',
             },
+            currentMessage: {
+                status: 'ok',
+                text: ''
+            }
         }
     },
     computed: {
@@ -39,14 +43,20 @@ export default {
         play(e) {
             e.preventDefault();
 
+            this.currentMessage.text = 'Проверка версии...'
+
             this.fetchConfig().then((data) => {
                 var oldCfg = this.cfg;
                 this.cfg = data;
 
-                if (oldCfg.clientVersion != this.cfg.clientVersion) { // download new version
+                if (oldCfg.client_version != this.cfg.client_version) { // download new version
+                    this.currentMessage.text = 'Загрузка новой версии!'
+
                     let archivePath = path.join(this.gamePath, 'skymp.zip');
-                    return this.downloadZip(this.cfg.clientUrl, archivePath).then(() => {
+                    return this.downloadZip(this.cfg.client_url, archivePath).then(() => {
                         extract(archivePath, {dir: this.gamePath}, err => {
+                            this.currentMessage.text = 'Распаковка архива...'
+
                             console.log('files unzipped', err);
                             if (!err) {
                                 this.startGame();
@@ -58,10 +68,11 @@ export default {
                 // old version is valid
                 this.startGame();
             });
-
         },
 
         fetchConfig() {
+            this.currentMessage.text = 'Проверка конфигурации...'
+
             var data = {};
             return new Promise((resolve, reject) => {
                 http.get("https://vk.com/page-120925453_53245312", res => {
@@ -69,11 +80,11 @@ export default {
                     let rawData = '';
                     res.on('data', (chunk) => { rawData += chunk; });
                     res.on('end', () => {
-                        data.clientUrl = getValueInDocument(rawData, 'targetURL')
-                        data.clientVersion = getValueInDocument(rawData, 'targetVer')
-                        data.serverIP = getValueInDocument(rawData, 'serverIP')
-                        data.serverPort = getValueInDocument(rawData, 'serverPort')
-                        data.serverPassword = getValueInDocument(rawData, 'serverPassword')
+                        data.client_url = getValueInDocument(rawData, 'targetURL')
+                        data.client_version = getValueInDocument(rawData, 'targetVer')
+                        data.server_ip = getValueInDocument(rawData, 'serverIP')
+                        data.server_port = getValueInDocument(rawData, 'serverPort')
+                        data.server_password = getValueInDocument(rawData, 'serverPassword')
 
                         console.log('fetch cfg', data);
                         resolve(data);
@@ -95,6 +106,9 @@ export default {
         },
 
         startGame() {
+          this.currentMessage.text = 'Запуск игры...'
+          setTimeout(window.close, 5000);
+
           console.log('[startGame] Writing to ', skympFilenames.cfg)
           this.cfg.name = this.authData.login;
           // this.cfg.server_ip = serverIP
