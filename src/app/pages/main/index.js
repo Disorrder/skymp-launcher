@@ -33,7 +33,8 @@ export default {
             currentMessage: {
                 status: 'ok',
                 text: ''
-            }
+            },
+            formDisabled: false,
         }
     },
     computed: {
@@ -42,14 +43,15 @@ export default {
     methods: {
         play(e) {
             e.preventDefault();
-
+            this.formDisabled = true;
             this.currentMessage.text = 'Проверка версии...'
 
             this.fetchConfig().then((data) => {
                 var oldCfg = this.cfg;
                 this.cfg = data;
 
-                if (oldCfg.client_version != this.cfg.client_version) { // download new version
+                // TODO: strings dont work
+                if (+oldCfg.client_version !== +this.cfg.client_version) { // download new version
                     this.currentMessage.text = 'Загрузка новой версии!'
 
                     let archivePath = path.join(this.gamePath, 'skymp.zip');
@@ -111,10 +113,6 @@ export default {
 
           console.log('[startGame] Writing to ', skympFilenames.cfg)
           this.cfg.name = this.authData.login;
-          // this.cfg.server_ip = serverIP
-          // this.cfg.server_port = serverPort
-          // this.cfg.client_version = clientVersion
-          // this.cfg.server_password = serverPassword
           this.cfg.translate = 'ru'
           const cfgPath = path.resolve(this.gamePath, skympFilenames.cfg);
           ini.write(cfgPath, this.cfg);
