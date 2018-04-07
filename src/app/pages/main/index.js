@@ -83,14 +83,13 @@ export default {
                   console.log('[startGame] child_process.spawnSync(...)')
                   const p = child_process.spawnSync(batPath, []);
                 }
-                
+
                 if (this.cfg.client_version != clientVersion) { // download new version
                   const archivePath = path.join(this.gamePath, 'skymp.zip');
                   console.log('archivePath is ', archivePath)
                   var file = fs.createWriteStream(archivePath);
                   var request = http.get(clientUrl, res => {
                     res.pipe(file);
-
                   });
                   request.on('response', res => {
                     setTimeout(() => {
@@ -98,12 +97,15 @@ export default {
                       extract(archivePath, {dir: this.gamePath}, err => {
                         console.log('files unzipped');
                         console.log(err);
+                        startGame();
+                        window.close();
                       });
                     }, 1000);
                   });
                 } else {
                   console.log('[play] Client is up-to-date; calling startGame()')
-                  startGame()
+                  startGame();
+                  window.close();
                 }
               });
             });
