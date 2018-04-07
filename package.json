@@ -8,7 +8,8 @@
     "web": "webpack-dev-server --progress",
     "dev": "webpack --watch",
     "build": "webpack --mode production",
-    "build-win": "build --win"
+    "build-app": "build -w --ia32",
+    "build-app64": "build -w --x64"
   },
   "keywords": [
     "Electron"
@@ -49,6 +50,7 @@
   "build": {
     "appId": "app.id",
     "win": {
+      "artifactName": "${productName}_v${version}_${arch}.${ext}",
       "target": "portable",
       "icon": "src/assets/logo/skymp-logo-256.ico"
     }
