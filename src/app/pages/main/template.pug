@@ -14,8 +14,8 @@ div#main.layout
                     .form-text.text-muted.text-center Пароль можно ввести в игре
                 button.btn.btn-primary(type="submit" style="width: 100%;") Играть!    
                 
-    #debug
+    #debug(@click="debugData.extended = !debugData.extended")
         div: u Debug
         div cwd: {{debugData.dirname}}
         div version: {{version}}
-        div Electron: {{versions.electron}}, Chromium: {{versions.chrome}}, Node: {{versions.node}}
+        div(v-if="debugData.extended") Electron: {{versions.electron}}, Chromium: {{versions.chrome}}, Node: {{versions.node}}

@@ -14,6 +14,7 @@ export default {
             version: pkg.version,
             versions: window.process.versions,
             debugData: {
+                extended: false,
                 dirname: __dirname,
             },
             gamePath: '',
