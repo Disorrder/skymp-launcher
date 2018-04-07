@@ -12,7 +12,7 @@ div#main.layout
                     input#login.form-control(placeholder="Имя персонажа" v-model="authData.login")
                 .form-group
                     .form-text.text-muted.text-center Пароль можно ввести в игре
-                button.btn.btn-primary(type="submit" style="width: 100%;") Играть!
+                button.btn.btn-primary(type="submit" style="width: 100%;" :disabled="formDisabled") Играть!
                 .form-group(v-if="currentMessage.text")
                     small.form-text.text-muted.text-center {{currentMessage.text}}
                 
