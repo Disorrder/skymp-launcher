@@ -12,6 +12,7 @@ export default {
     data() {
         return {
             version: pkg.version,
+            versions: window.process.versions,
             debugData: {
                 dirname: __dirname,
             },
