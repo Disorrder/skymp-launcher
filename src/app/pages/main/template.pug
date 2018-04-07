@@ -1,10 +1,10 @@
 div#main.layout
-    nav.navbar-nav
+    nav.navbar-nav(style="-webkit-app-region: no-drag")
         router-link.nav-item.nav-settings(:to=`{name: "settings"}`)
             i.fa.fa-bars
     
     header
-    main.container.mt-4
+    main.container.mt-4(style="-webkit-app-region: no-drag")
         .row.justify-content-center: .card.col-6: .card-body
             h3.text-center Авторизация
             form#auth.mt-4(@submit="play")

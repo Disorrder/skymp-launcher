@@ -13,7 +13,7 @@ let mainWindow
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1150, height: 600});
+  mainWindow = new BrowserWindow({width: 800, height: 600, frame: false});
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
@@ -55,6 +55,9 @@ app.on('activate', function () {
     createWindow()
   }
 })
+
+app.on('browser-window-created', function(e, window) {
+});
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
