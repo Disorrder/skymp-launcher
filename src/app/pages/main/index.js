@@ -59,9 +59,10 @@ export default {
             this.formDisabled = true;
 
             const oldCfg = this.cfg;
-            this.cfg = await this.fetchConfig();
+            this.cfg = await this.getConfig();
+            if(!this.cfg) return;
 
-            const isUpToDate = oldCfg.client_version && this.cfg.client_version && oldCfg.client_version.trim() === this.cfg.client_version.trim();
+            const isUpToDate = oldCfg.client_version && this.cfg.client_version && oldCfg.client_version === this.cfg.client_version;
             if (isUpToDate) return this.startGame();
 
             this.currentMessage.text = 'Обновление до версии ' + this.cfg.client_version + ' ...';
@@ -78,15 +79,22 @@ export default {
             });
         },
 
-        async fetchConfig() {
-            this.currentMessage.text = 'Проверка конфигурации...';
-            const jsonString = await requestPromise('https://www.jasonbase.com/things/m5bX');
-            const data = JSON.parse(jsonString);
-            console.log('fetch cfg ', data);
-            return data;
+        async getConfig() {
+            try {
+                this.currentMessage.text = 'Проверка конфигурации...';
+                const jsonString = await requestPromise('https://www.jasonbase.com/things/m5bX');
+                const data = JSON.parse(jsonString);
+                if (data.client_version) data.client_version = data.client_version.trim();
+                console.log('getConfig(): ', data);
+                return data;
+            } catch(err) {
+                console.log('getConfig() error: ', err);
+                if (err.statusCode) this.currentMessage.text = 'Ошибка ' + err.statusCode;
+                else this.currentMessage.text = err.message;
+            }
         },
 
-        async downloadZip(url, filename) {
+        downloadZip(url, filename) {
             var file = fs.createWriteStream(filename);
             return new Promise((resolve, reject) => {
                 http.get(url, res => {
