@@ -1,16 +1,25 @@
 import './style.styl';
 
-import * as ini from 'app/utils/iniFile';
+const timePoint1 = (new Date).getTime();
 
-const fs = window.require('fs');
-const path = window.require('path');
-const child_process = window.require('child_process');
-const http = require('http');
-const extract = window.require('extract-zip');
+import * as ini from 'app/utils/iniFile';
+import * as miscUtil from 'app/utils/miscUtil';
+
+var fs = window.require('fs');
+var path = window.require('path');
+var child_process = window.require('child_process');
+var http = require('http');
+var extract = window.require('extract-zip');
+var copyFileSync = window.require('fs-copy-file-sync');
+var requestPromise = undefined; // too fat to require on startup (over 300ms on my machine); I'l require it later
+
+const timePoint2 = (new Date).getTime();
+console.log('Loaded in: %d ms', timePoint2 - timePoint1);
 
 const skympFilenames = {
     cfg: 'skymp_config.ini',
     starter: 'skymp.bat',
+    zip: 'skymp.zip'
 };
 
 var pkg = require('app/../../package.json');
@@ -41,61 +50,44 @@ export default {
 
     },
     methods: {
-        play(e) {
+        async play(e) {
             e.preventDefault();
             this.formDisabled = true;
-            this.currentMessage.text = 'Проверка версии...'
 
-            this.fetchConfig().then((data) => {
-                var oldCfg = this.cfg;
-                this.cfg = data;
+            if (!requestPromise) {
+                requestPromise = window.require('request-promise');
+                console.log("requestPromise was loaded");
+            }
 
-                // TODO: strings dont work
-                if (+oldCfg.client_version !== +this.cfg.client_version) { // download new version
-                    this.currentMessage.text = 'Загрузка новой версии!'
+            const oldCfg = this.cfg;
+            this.cfg = await this.fetchConfig();
 
-                    let archivePath = path.join(this.gamePath, 'skymp.zip');
-                    return this.downloadZip(this.cfg.client_url, archivePath).then(() => {
-                        extract(archivePath, {dir: this.gamePath}, err => {
-                            this.currentMessage.text = 'Распаковка архива...'
+            const isUpToDate = oldCfg.client_version && this.cfg.client_version && oldCfg.client_version.replace(/\s+/g, '') === this.cfg.client_version.replace(/\s+/g, '');
+            if (isUpToDate) return this.startGame();
 
-                            console.log('files unzipped', err);
-                            if (!err) {
-                                this.startGame();
-                            }
-                        });
-                    })
+            this.currentMessage.text = 'Обновление до версии ' + this.cfg.client_version + ' ...';
+            const archivePath = path.join(this.gamePath, skympFilenames.zip);
+            await this.downloadZip(this.cfg.client_url, archivePath);
+
+            extract(archivePath, {dir: this.gamePath}, err => {
+                this.currentMessage.text = 'Установка...';
+                console.log('files unzipped', err);
+                if (!err) {
+                    this.installMyGUIFont();
+                    this.startGame();
                 }
-
-                // old version is valid
-                this.startGame();
             });
         },
 
-        fetchConfig() {
-            this.currentMessage.text = 'Проверка конфигурации...'
-
-            var data = {};
-            return new Promise((resolve, reject) => {
-                http.get("https://vk.com/page-120925453_53245312", res => {
-                    res.setEncoding('utf8');
-                    let rawData = '';
-                    res.on('data', (chunk) => { rawData += chunk; });
-                    res.on('end', () => {
-                        data.client_url = getValueInDocument(rawData, 'targetURL')
-                        data.client_version = getValueInDocument(rawData, 'targetVer')
-                        data.server_ip = getValueInDocument(rawData, 'serverIP')
-                        data.server_port = getValueInDocument(rawData, 'serverPort')
-                        data.server_password = getValueInDocument(rawData, 'serverPassword')
-
-                        console.log('fetch cfg', data);
-                        resolve(data);
-                    })
-                });
-            });
+        async fetchConfig() {
+            this.currentMessage.text = 'Проверка конфигурации...';
+            const jsonString = await requestPromise('https://www.jasonbase.com/things/m5bX');
+            const data = JSON.parse(jsonString);
+            console.log('fetch cfg ', data);
+            return data;
         },
 
-        downloadZip(url, filename) {
+        async downloadZip(url, filename) {
             var file = fs.createWriteStream(filename);
             return new Promise((resolve, reject) => {
                 http.get(url, res => {
@@ -107,31 +99,62 @@ export default {
             });
         },
 
+        installMyGUIFont() {
+            /* 'extract-zip' can't extract a part of zip archive =>
+                unzip of 'futuralightc1.otf' causes system error in some cases =>
+                I'l pack that file with another name, unzip all files and then try to copy 'futuralightc1.otf__' to 'futuralightc1.otf'
+                (It is acceptable behavior to fail 'copyFileSync' operation because the file is never updating)
+            */
+            try {
+                const from = path.join(this.gamePath, 'MyGUI', 'futuralightc1.otf__');
+                const to = path.join(this.gamePath, 'MyGUI', 'futuralightc1.otf');
+                copyFileSync(from, to);
+            } catch(err) {
+                console.log('blocked by TESV.exe (it\'s OK)');
+            }
+        },
+
         startGame() {
-          this.currentMessage.text = 'Запуск игры...'
-          setTimeout(window.close, 5000);
+            this.currentMessage.text = 'Запуск игры...';
+            //setTimeout(window.close, 5000);
 
-          console.log('[startGame] Writing to ', skympFilenames.cfg)
-          this.cfg.name = this.authData.login;
-          this.cfg.translate = 'ru'
-          const cfgPath = path.resolve(this.gamePath, skympFilenames.cfg);
-          ini.write(cfgPath, this.cfg);
+            // Save config
+            console.log('Writing to ', skympFilenames.cfg);
+            this.cfg.name = this.authData.login;
+            const cfgPath = path.resolve(this.gamePath, skympFilenames.cfg);
+            ini.write(cfgPath, this.cfg);
 
-          const batPath = this.gamePath + '/' + skympFilenames.starter;
-          const batStr = 'cd %~dp0\nstart /b skse_loader.exe'
-          console.log('[startGame] Writing to ', skympFilenames.starter)
-          fs.writeFileSync(batPath, batStr)
+            // Save starter
+            const batPath = path.join(this.gamePath, skympFilenames.starter);
+            const batStr = 'cd ' + this.gamePath + ' && ' + 'skse_loader.exe';
+            console.log('Writing to ', skympFilenames.starter);
+            fs.writeFileSync(batPath, batStr);
 
-          console.log('[startGame] child_process.spawnSync(...)')
-          const p = child_process.spawnSync(batPath, []);
-        }
+            // Run starter
+            console.log('child_process.spawnSync(...)');
+            const p = child_process.spawn(batPath, []);
+
+            p.stdout.on('data', data => {
+                console.log(skympFilenames.starter, ' stdout: ', data);
+            });
+            p.stderr.on('data', async data => {
+                console.log(skympFilenames.starter, ' stderr: ', data);
+                this.currentMessage.text = 'Не удалось запустить Skyrim. Ищем другой способ...';
+                await miscUtil.sleep(2333);
+                this.currentMessage.text = 'Запуск игры...';
+
+                // TODO: Start game
+            });
+
+        },
     },
 
     created() {
         this.gamePath = localStorage.gamePath || '';
         if (!this.gamePath) this.$router.push({name: 'settings'});
 
-        const cfgPath = path.resolve(this.gamePath, skympFilenames.cfg)
+        // Load config
+        const cfgPath = path.resolve(this.gamePath, skympFilenames.cfg);
         this.cfg = ini.read(cfgPath);
         if (this.cfg.name) this.authData.login = this.cfg.name;
     },
@@ -140,17 +163,3 @@ export default {
         $('form#auth #login').focus();
     }
 };
-
-// utils
-function getValueInDocument(chunk, varName) {
-  let val = ''
-  const beginSearchResult = chunk.search('(' + varName + ')')
-  const endSearchResult = chunk.search('(/' + varName + ')')
-  if (beginSearchResult != -1 && endSearchResult != -1) {
-    const begin = beginSearchResult + ('(' + varName + ')').length;
-    const end = endSearchResult - 1;
-    val = chunk.substring(begin, end);
-  }
-  console.log("[getValueInDocument] " +  varName + '=' + val);
-  return val
-}
