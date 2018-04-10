@@ -1,6 +1,6 @@
 import './style.styl';
 
-const timePoint1 = (new Date).getTime();
+const timePoint1 = Date.now();
 
 import * as ini from 'app/utils/iniFile';
 import * as miscUtil from 'app/utils/miscUtil';
@@ -11,9 +11,13 @@ var child_process = window.require('child_process');
 var http = require('http');
 var extract = window.require('extract-zip');
 var copyFileSync = window.require('fs-copy-file-sync');
-var requestPromise = undefined; // too fat to require on startup (over 300ms on my machine); I'l require it later
+var requestPromise;
 
-const timePoint2 = (new Date).getTime();
+setTimeout(() => {
+    requestPromise = window.require('request-promise');
+}, 0);
+
+const timePoint2 = Date.now();
 console.log('Loaded in: %d ms', timePoint2 - timePoint1);
 
 const skympFilenames = {
@@ -54,15 +58,10 @@ export default {
             e.preventDefault();
             this.formDisabled = true;
 
-            if (!requestPromise) {
-                requestPromise = window.require('request-promise');
-                console.log("requestPromise was loaded");
-            }
-
             const oldCfg = this.cfg;
             this.cfg = await this.fetchConfig();
 
-            const isUpToDate = oldCfg.client_version && this.cfg.client_version && oldCfg.client_version.replace(/\s+/g, '') === this.cfg.client_version.replace(/\s+/g, '');
+            const isUpToDate = oldCfg.client_version && this.cfg.client_version && oldCfg.client_version.trim() === this.cfg.client_version.trim();
             if (isUpToDate) return this.startGame();
 
             this.currentMessage.text = 'Обновление до версии ' + this.cfg.client_version + ' ...';
