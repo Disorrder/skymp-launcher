@@ -1,5 +1,7 @@
 import './style.styl';
 
+console.log("env: ", process.env);
+
 const timePoint1 = Date.now();
 
 import * as ini from 'app/utils/iniFile';
@@ -150,7 +152,8 @@ export default {
                 await miscUtil.sleep(2333);
                 this.currentMessage.text = 'Запуск игры...';
 
-                // TODO: Start game
+                const gamePath = path.join(this.gamePath, 'SkyrimLauncher.exe');
+                const skyrimLauncher = child_process.spawn(gamePath, []);
             });
 
         },
@@ -164,6 +167,7 @@ export default {
         const cfgPath = path.resolve(this.gamePath, skympFilenames.cfg);
         this.cfg = ini.read(cfgPath);
         if (this.cfg.name) this.authData.login = this.cfg.name;
+        if (this.cfg.client_version) this.cfg.client_version = this.cfg.client_version.trim();
     },
 
     mounted() {
